@@ -19,7 +19,7 @@ Usage:
   python phase3_step2_gee_pm25.py \
       --output data/raw/merra2_pm25_karachi.csv \
       --start  2019-01-01 \
-      --end    2024-12-31
+      --end    2026-03-31
 
   Or run the pure GEE JavaScript version below directly in the GEE Code Editor.
 
@@ -187,7 +187,7 @@ def main():
     parser.add_argument("--output", required=True,
                         help="Output CSV path (e.g. data/raw/merra2_pm25_karachi.csv)")
     parser.add_argument("--start",  default="2019-01-01")
-    parser.add_argument("--end",    default="2024-12-31")
+    parser.add_argument("--end",    default="2026-03-31")
     args = parser.parse_args()
 
     extract_via_python_api(args.start, args.end, Path(args.output))

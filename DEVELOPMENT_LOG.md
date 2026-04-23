@@ -23,7 +23,7 @@ We have transitioned into a high-frequency synchronization phase, ensuring every
 ## ✅ Milestones Completed
 
 ### 1. Multi-Source Data Acquisition (GEE)
-- **ERA5 Meteorology:** Successfully exported daily meteorological features (Wind Speed, RH, Temp) from 2019–2024.
+- **ERA5 Meteorology:** Successfully exported daily meteorological features (Wind Speed, RH, Temp) from 2019–2026 (March).
 - **MODIS AOD:** Acquired Aerosol Optical Depth data at 1km resolution.
 - **S2 & VIIRS:** Integrated Sentinel-2 (NDVI/NDBI) and VIIRS (Nighttime Lights) for spatial and socioeconomic features.
 - **Sentinel-5P (v3):** Triggered citywide regional averaging for NO2, SO2, CO, and Aerosols.
@@ -45,7 +45,7 @@ We integrated data from four distinct satellite/reanalysis sources to capture a 
 
 ### 2. The Cloud-to-Drive Workflow
 Unlike traditional downloading, our pipeline processes data **on the server**:
-1.  **Filtering:** We apply spatial (Karachi Boundary) and temporal (2019–2024) filters directly on Google's Petabyte-scale servers.
+1.  **Filtering:** We apply spatial (Karachi Boundary) and temporal (2019–2026) filters directly on Google's Petabyte-scale servers.
 2.  **Reduction:** Millions of satellite pixels are aggregated into simple tabular formats (CSV) using `reduceRegions`.
 3.  **Export:** These processed tables are queued in the GEE Task Manager and uploaded directly to **Google Drive**.
 4.  **Local Sync:** Files are then downloaded to the `data/raw/` directory for local analysis.
@@ -111,7 +111,7 @@ We implemented a mapping layer to ensure consistency:
 ### 2. The Ground Truth Shift: NASA MERRA-2 (`phase3_step2_gee_pm25.py`)
 - **Initial Challenge:** Our original plan was to use physical OpenAQ sensor data, but historical coverage was too sparse (many stations had massive gaps or missing API data).
 - **The Solution:** We transitioned to a GEE-native **MERRA-2 approach**. We pull NASA's aerosol mass surface components (Black Carbon, Organic Carbon, Sulfate, Sea Salt, and Dust) and apply a NASA-validated stoichiometric formula to compute daily surface PM2.5 levels. 
-- **Benefit:** This gives us a mathematically robust, 100% complete temporal target dataset for our entire 2019-2024 timeframe.
+- **Benefit:** This gives us a mathematically robust, 100% complete temporal target dataset for our entire 2019-2026 timeframe.
 
 ### 3. Final Alignment (`phase3_step3_merge_target.py`)
 - The clean satellite features were merged with the MERRA-2 target PM2.5 to form `modeling_dataset.csv` (14,592 rows × 19 columns). The target vector `pm25` boasts 100% coverage, clearing the path for robust Machine Learning training.

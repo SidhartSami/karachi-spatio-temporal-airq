@@ -28,7 +28,7 @@ def main():
     ])
 
     start_date = '2019-01-01'
-    end_date = '2024-01-01'
+    end_date = '2026-03-31'
     karachi_rect = ee.Geometry.Rectangle([66.60, 24.60, 67.60, 25.20])
 
     def export_collection(col, name, band_names):

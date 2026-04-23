@@ -58,6 +58,11 @@ This choice was strategic for several reasons:
 
 ---
 
+## 🌍 Phase 4: Modeling & Digital Twin
+*   **Digital Twin Visuals:** Generated a 3D geospatial mesh of Karachi using exact municipal boundaries (`osmnx`). Rendered interactive simulations utilizing **PyDeck**, achieving Mapbox-quality dark-themed 3D extrusion aesthetics without requiring API keys. Data includes real-world hotspots (SITE, Korangi).
+
+---
+
 ## 🧹 Phase 02: Preprocessing & Data Merging
 
 ### 1. The Merging Engine (`merge_data.py`)

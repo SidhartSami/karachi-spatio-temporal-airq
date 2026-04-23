@@ -1,6 +1,6 @@
 # 📄 Product Requirements Document (PRD)
 **Project Name:** Karachi Spatio-Temporal Air Quality Estimator  
-**Status:** In Development (Phase 3 of 5)  
+**Status:** In Development (Phase 4 of 5)  
 **Last Updated:** 2026-04-23  
 
 ---
@@ -49,12 +49,12 @@ Instead of relying purely on hardware sensors, the system relies on a **Hybrid S
 - [x] Implement a robust merging engine to align multiple spatial resolutions.
 - [x] Handle data mismatch, Cartesian explosions, and dummy locators dynamically.
 
-### ⏳ Phase 3: Gap Filling & Imputation (Next Step)
-- [ ] Address natural missing data (e.g., satellite cloud-masking during monsoons).
-- [ ] Implement interpolation, K-Nearest Neighbors (KNN), or MICE to impute sparse S5P/MODIS data.
-- [ ] Integrate a Ground-Truth PM2.5 dataset as the target variable for the model.
+### ✅ Phase 3: Gap Filling & Imputation
+- [x] Address natural missing data (dropped 100% empty columns like NO2/SO2/CO).
+- [x] Implement K-Nearest Neighbors (KNN) stratified by station to impute sparse MODIS AOD data.
+- [x] Integrate a Ground-Truth PM2.5 dataset (using NASA MERRA-2 via GEE) as the target variable for the model.
 
-### 📅 Phase 4: Machine Learning Modeling
+### ⏳ Phase 4: Machine Learning Modeling (Next Step)
 - [ ] Train Baseline Models (Linear Regression, Random Forest).
 - [ ] Train Advanced Models (XGBoost, Spatio-Temporal Neural Networks).
 - [ ] Perform Feature Importance analysis (Which factor drives Karachi's pollution the most?).

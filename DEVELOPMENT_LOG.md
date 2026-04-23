@@ -10,8 +10,8 @@ This document serves as the primary technical record for the Karachi Air Quality
 | :--- | :--- | :--- |
 | **01 Data Collection** | Multi-source satellite acquisition via Google Earth Engine | ✅ Completed |
 | **02 Preprocessing** | Data cleaning, merging, and row count stabilization | ✅ Completed |
-| **03 Gap Filling** | Spatio-temporal imputation for sparse MODIS/S5P data | ⏳ In Progress |
-| **04 Modeling** | PM2.5 estimation via Tree-based and Deep Learning models | 🚀 Planned |
+| **03 Gap Filling & Target** | Cleaned missing columns, KNN Imputation, and MERRA-2 PM2.5 integration | ✅ Completed |
+| **04 Modeling** | PM2.5 estimation via Tree-based and Deep Learning models | ⏳ In Progress |
 
 ---
 
@@ -102,6 +102,22 @@ We implemented a mapping layer to ensure consistency:
 
 ---
 
+## 🧪 Phase 03: Gap Filling & Ground Truth Integration
+
+### 1. Data Cleaning & Imputation (`phase3_step1_clean_impute.py`)
+- **Dead Columns Removed:** Dropped `no2`, `so2`, and `co` as they returned 100% missing values in the specific extraction format.
+- **Spatio-Temporal KNN Imputation:** Handled ~10% missing values in MODIS AOD (`Optical_Depth_047`, `Optical_Depth_055`) using a `KNNImputer(k=5)` stratified by Station to ensure spatial relevance.
+
+### 2. The Ground Truth Shift: NASA MERRA-2 (`phase3_step2_gee_pm25.py`)
+- **Initial Challenge:** Our original plan was to use physical OpenAQ sensor data, but historical coverage was too sparse (many stations had massive gaps or missing API data).
+- **The Solution:** We transitioned to a GEE-native **MERRA-2 approach**. We pull NASA's aerosol mass surface components (Black Carbon, Organic Carbon, Sulfate, Sea Salt, and Dust) and apply a NASA-validated stoichiometric formula to compute daily surface PM2.5 levels. 
+- **Benefit:** This gives us a mathematically robust, 100% complete temporal target dataset for our entire 2019-2024 timeframe.
+
+### 3. Final Alignment (`phase3_step3_merge_target.py`)
+- The clean satellite features were merged with the MERRA-2 target PM2.5 to form `modeling_dataset.csv` (14,592 rows × 19 columns). The target vector `pm25` boasts 100% coverage, clearing the path for robust Machine Learning training.
+
+---
+
 ## ❓ Technical FAQ for Demo Preparation
 
 **Q: Why do we have missing values in satellite data?**  
@@ -125,6 +141,9 @@ We implemented a mapping layer to ensure consistency:
 | `run_data_collection.py` | Initial GEE extraction (Point-based) | *Deprecated* (Use for ERA5/MODIS only) |
 | `scratch/run_s5p_citywide.py` | GEE Citywide Extraction (The S5P Solution) | Run when chemical data is needed |
 | `merge_data.py` | Unifies all CSVs into one master dataset | Run after downloading new CSVs from Drive |
+| `phase3_step1_clean_impute.py` | Drops dead columns & performs KNN imputation on missing AOD | Run on merged data to clean features |
+| `phase3_step2_gee_pm25.py` | Extracts NASA MERRA-2 daily PM2.5 target via GEE | Run to fetch baseline Ground Truth |
+| `phase3_step3_merge_target.py` | Joins clean features with MERRA-2 PM2.5 ground truth | Final step to build `modeling_dataset.csv` |
 
 ---
 

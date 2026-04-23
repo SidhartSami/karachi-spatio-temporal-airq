@@ -3,6 +3,7 @@ import numpy as np
 import geopandas as gpd
 from shapely.geometry import box
 from keplergl import KeplerGl
+import osmnx as ox
 
 def create_grid(bbox, step=0.01):
     min_lon, min_lat, max_lon, max_lat = bbox
@@ -20,18 +21,32 @@ def create_grid(bbox, step=0.01):
     return gpd.GeoDataFrame(grid, crs="EPSG:4326")
 
 def main():
-    print("Generating Karachi Digital Twin Geo-Grid...")
-    # Karachi roughly: [66.85, 24.75, 67.25, 25.05]
-    karachi_bbox = [66.85, 24.75, 67.25, 25.05]
+    print("Fetching exact Karachi municipal boundary...")
+    try:
+        # Fetch the polygon boundary for Karachi using OpenStreetMap
+        karachi_boundary = ox.geocode_to_gdf("Karachi, Pakistan")
+    except Exception as e:
+        print(f"Error fetching boundary: {e}")
+        return
+        
+    print("Generating Geo-Grid...")
+    # Get the bounding box of the true boundary
+    bounds = karachi_boundary.total_bounds
+    karachi_bbox = [bounds[0], bounds[1], bounds[2], bounds[3]]
     
-    gdf = create_grid(karachi_bbox, step=0.01) # ~1km grid
+    gdf = create_grid(karachi_bbox, step=0.015) # ~1.5km grid
+    
+    print("Clipping grid to exact Karachi shape (removing ocean/outside areas)...")
+    # Clip the grid to the actual Karachi boundary
+    gdf = gpd.clip(gdf, karachi_boundary)
     
     # Simulate some PM2.5 data (gradient with some noise)
     # Higher pollution near industrial areas (SITE, Korangi)
     # SITE: 66.98, 24.94 | Korangi: 67.03, 24.82
     
     def simulate_pm25(row):
-        lon, lat = row['longitude'], row['latitude']
+        # We use centroid because clipped geometries might be irregular polygons
+        lon, lat = row['geometry'].centroid.x, row['geometry'].centroid.y
         
         # Distance to SITE
         dist_site = np.sqrt((lon - 66.98)**2 + (lat - 24.94)**2)

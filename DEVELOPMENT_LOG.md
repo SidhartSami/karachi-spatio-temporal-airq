@@ -15,6 +15,25 @@ This document serves as the primary technical record for the Karachi Air Quality
 
 ---
 
+## 🚀 Current Status: GitHub Synchronization & Refinement
+We have transitioned into a high-frequency synchronization phase, ensuring every technical refinement is immediately committed and pushed to GitHub. This maximizes version control granularity and ensures team transparency for the upcoming demo.
+
+---
+
+## ✅ Milestones Completed
+
+### 1. Multi-Source Data Acquisition (GEE)
+- **ERA5 Meteorology:** Successfully exported daily meteorological features (Wind Speed, RH, Temp) from 2019–2024.
+- **MODIS AOD:** Acquired Aerosol Optical Depth data at 1km resolution.
+- **S2 & VIIRS:** Integrated Sentinel-2 (NDVI/NDBI) and VIIRS (Nighttime Lights) for spatial and socioeconomic features.
+- **Sentinel-5P (v3):** Triggered citywide regional averaging for NO2, SO2, CO, and Aerosols.
+
+### 2. Merging Infrastructure & Cleanup
+- Built a robust Python pipeline (`merge_data.py`) to unify multiple satellite CSVs on a common spatio-temporal grid (Date + Station).
+- **GitHub Optimization:** Implemented a granular commit strategy and performed a repository cleanup (removing redundant/deprecated notebooks).
+
+---
+
 ## 🛰️ Phase 01: Data Collection (GEE Architecture)
 
 ### 1. The Multi-Source Strategy

@@ -90,6 +90,16 @@ We implemented a mapping layer to ensure consistency:
 - **The Issue:** Processing 5 years of daily global data is impossible on a standard laptop.
 - **The Solution:** All heavy lifting (Pixel math) is offloaded to GEE. The local Python script only handles the final 5MB CSV merges, making the pipeline lightweight and reproducible.
 
+### 🔴 Problem 4: Spatial-Temporal Alignment (Cartesian Explosion & Broadcasting)
+- **The Issue:** MODIS AOD values were returning 0 non-nulls after the merge, while VIIRS Nighttime Lights was completely dropping out.
+- **The Discovery:** 
+  1. MODIS was extracted with a dummy citywide station name (`Karachi`), preventing the `pd.merge` from mapping values to the 8 specific ground stations.
+  2. VIIRS data was processed on a monthly frequency (`year_month`), lacking daily granularity, which threw off the daily join operations. 
+- **The Solution:** 
+  - Rewrote the merging logic in `merge_data.py` utilizing a custom `smart_merge()` function. 
+  - Detected and dropped dummy `station='Karachi'` columns dynamically to force a cross-broadcast of citywide metrics (like MODIS and ERA5) across all 8 individual stations, effectively enriching local meteorology with regional baselines.
+  - Aligned VIIRS on `year_month` and correctly mapped `mean` aggregated metrics back onto the daily granular records.
+
 ---
 
 ## ❓ Technical FAQ for Demo Preparation

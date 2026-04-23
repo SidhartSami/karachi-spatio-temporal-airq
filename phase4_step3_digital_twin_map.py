@@ -51,7 +51,7 @@ def main():
     bounds = karachi_boundary.total_bounds
     karachi_bbox = [bounds[0], bounds[1], bounds[2], bounds[3]]
     
-    gdf = create_grid(karachi_bbox, step=0.015) # ~1.5km grid
+    gdf = create_grid(karachi_bbox, step=0.01) # ~1km grid for higher resolution
     
     print("Clipping grid to exact Karachi shape (removing ocean/outside areas)...")
     gdf = gpd.clip(gdf, karachi_boundary)
@@ -78,7 +78,7 @@ def main():
     # Format PM2.5 to 2 decimal places for the tooltip
     gdf['pm25_formatted'] = gdf['PM2.5'].round(2).astype(str) + ' µg/m³'
 
-    layer = pdk.Layer(
+    grid_layer = pdk.Layer(
         "GeoJsonLayer",
         gdf,
         opacity=0.8,
@@ -91,13 +91,36 @@ def main():
         pickable=True,
         auto_highlight=True
     )
+    
+    # Add text labels for key areas so the user knows they are looking at Karachi
+    labels_data = [
+        {"name": "Karachi Urban Core", "coordinates": [67.02, 24.86], "elevation": 3000},
+        {"name": "SITE Industrial Area", "coordinates": [66.98, 24.94], "elevation": 4500},
+        {"name": "Korangi Industrial Area", "coordinates": [67.11, 24.82], "elevation": 5000},
+        {"name": "Malir", "coordinates": [67.19, 24.88], "elevation": 3000},
+        {"name": "Clifton / DHA", "coordinates": [67.03, 24.80], "elevation": 2000}
+    ]
+    
+    text_layer = pdk.Layer(
+        "TextLayer",
+        labels_data,
+        get_position="coordinates",
+        get_text="name",
+        get_size=18,
+        get_color=[255, 255, 255, 255],
+        get_alignment_baseline="'bottom'",
+        get_elevation="elevation",
+        elevation_scale=1,
+        extruded=True,
+        pickable=False
+    )
 
     view_state = pdk.ViewState(
-        latitude=24.9,
+        latitude=24.88,
         longitude=67.05,
-        zoom=10,
-        pitch=50,
-        bearing=24
+        zoom=10.8, # Zoomed in to show the city better
+        pitch=55,
+        bearing=15
     )
     
     tooltip = {
@@ -108,8 +131,8 @@ def main():
         }
     }
 
-    # "dark" map_style uses CartoDB Dark Matter automatically (no API key needed!)
-    r = pdk.Deck(layers=[layer], initial_view_state=view_state, map_style="dark", tooltip=tooltip)
+    # "dark" map_style uses CartoDB Dark Matter automatically
+    r = pdk.Deck(layers=[grid_layer, text_layer], initial_view_state=view_state, map_style="dark", tooltip=tooltip)
     
     output_file = "karachi_digital_twin.html"
     r.to_html(output_file)

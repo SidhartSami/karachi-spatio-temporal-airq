@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Karachi AirQ Twin — Support Vector (SVR)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background: #0d0d14;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            overflow: hidden;
+            color: white;
+        }
+        
+        #dashboard {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 320px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            z-index: 1000;
+        }
+        
+        h1 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #38bdf8;
+            margin-bottom: 4px;
+        }
+        
+        .subtitle {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            margin-bottom: 24px;
+        }
+        
+        .current-model {
+            background: rgba(56, 189, 248, 0.15);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .current-label {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+        
+        .current-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #38bdf8;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        
+        .stat-box {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #f8fafc;
+        }
+        
+        .stat-value.danger { color: #f87171; }
+        .stat-value.warning { color: #fbbf24; }
+        
+        .stat-label {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+        
+        .models-title {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+        
+        .model-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            color: #cbd5e1;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        
+        .model-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateX(4px);
+        }
+        
+        .model-btn.active {
+            background: rgba(56, 189, 248, 0.2);
+            border-color: rgba(56, 189, 248, 0.5);
+            color: white;
+        }
+        
+        .model-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        
+        .legend {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .legend-bar {
+            height: 10px;
+            background: linear-gradient(to right, #00E400, #FFFF00, #FF7E00, #FF0000, #8F3F97, #7E0023);
+            border-radius: 5px;
+            position: relative;
+        }
+        
+        .legend-whomarker {
+            position: absolute;
+            top: -3px;
+            width: 2px;
+            height: 16px;
+            background: white;
+        }
+        
+        .legend-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.65rem;
+            color: #64748b;
+            margin-top: 6px;
+        }
+        
+        .who-info {
+            margin-top: 16px;
+            padding: 12px;
+            background: rgba(248, 113, 113, 0.1);
+            border: 1px solid rgba(248, 113, 113, 0.2);
+            border-radius: 8px;
+            font-size: 0.8rem;
+            color: #f87171;
+        }
+        
+        #map-frame {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="dashboard">
+        <h1>🌍 Karachi AirQ Twin</h1>
+        <div class="subtitle">Model Comparison Dashboard</div>
+        
+        <div class="current-model">
+            <div class="current-label">Active Model</div>
+            <div class="current-name">Support Vector (SVR)</div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-value danger">55.3</div>
+                <div class="stat-label">Mean PM2.5<br>µg/m³</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value">133.6</div>
+                <div class="stat-label">Max PM2.5<br>µg/m³</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value danger">100.0%</div>
+                <div class="stat-label">Exceeds<br>WHO 24h</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value">1278</div>
+                <div class="stat-label">Grid<br>Cells</div>
+            </div>
+        </div>
+        
+        <div class="models-title">🤖 Switch Model</div>
+        
+        <a href="model_ensemble_average.html" class="model-btn " style="--model-color: #c8f04a">
+            <span class="model-dot" style="background: #c8f04a"></span>
+            Ensemble Average
+        </a>
+        
+        <a href="model_lstm_deep_learning.html" class="model-btn " style="--model-color: #4af0c8">
+            <span class="model-dot" style="background: #4af0c8"></span>
+            LSTM (Deep Learning)
+        </a>
+        
+        <a href="model_xgboost_ensemble.html" class="model-btn " style="--model-color: #f04a7a">
+            <span class="model-dot" style="background: #f04a7a"></span>
+            XGBoost Ensemble
+        </a>
+        
+        <a href="model_random_forest.html" class="model-btn " style="--model-color: #f0c84a">
+            <span class="model-dot" style="background: #f0c84a"></span>
+            Random Forest
+        </a>
+        
+        <a href="model_support_vector_svr.html" class="model-btn active" style="--model-color: #7a4af0">
+            <span class="model-dot" style="background: #7a4af0"></span>
+            Support Vector (SVR)
+        </a>
+        
+        
+        <div class="legend">
+            <div class="legend-bar">
+                <div class="legend-whomarker" style="left: 13%;"></div>
+                <div class="legend-whomarker" style="left: 40%;"></div>
+            </div>
+            <div class="legend-labels">
+                <span>Clean</span>
+                <span>WHO</span>
+                <span>Unhealthy</span>
+                <span>Hazardous</span>
+            </div>
+        </div>
+        
+        <div class="who-info">
+            ⚠️ WHO 24h limit: 15 µg/m³ | Annual: 5 µg/m³<br>
+            Karachi exceeds by 11.1×
+        </div>
+    </div>
+    
+    <iframe id="map-frame" src="map_support_vector_svr.html"></iframe>
+</body>
+</html>

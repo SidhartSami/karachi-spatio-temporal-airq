@@ -440,9 +440,14 @@ def main():
         )
         
         labels_data = [
-            {"name": "SITE INDUSTRIAL", "position": [66.98, 24.90, 9000]},
-            {"name": "KORANGI", "position": [67.11, 24.82, 10500]},
-            {"name": "CENTRAL", "position": [67.05, 24.88, 7000]},
+            {"name": "SITE INDUSTRIAL", "position": [66.98, 24.94, 9500]},
+            {"name": "KORANGI INDUSTRIAL", "position": [67.03, 24.82, 10500]},
+            {"name": "SADDAR (COMMERCIAL)", "position": [67.01, 24.86, 7500]},
+            {"name": "GULSHAN-E-IQBAL", "position": [67.08, 24.91, 6500]},
+            {"name": "NORTH NAZIMABAD", "position": [67.12, 24.98, 7000]},
+            {"name": "GULISTAN JAUHAR", "position": [67.13, 24.89, 6000]},
+            {"name": "LANDHI", "position": [66.99, 24.81, 9000]},
+            {"name": "FEDERAL B AREA", "position": [67.05, 24.92, 7200]},
         ]
         
         text_layer = pdk.Layer(

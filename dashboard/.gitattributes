@@ -1,0 +1,2 @@
+notebooks/models/*.pkl filter=lfs diff=lfs merge=lfs -text
+notebooks/models/*.pt filter=lfs diff=lfs merge=lfs -text

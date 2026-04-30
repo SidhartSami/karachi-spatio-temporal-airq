@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_fcc5b6fc1a1d7911fa9943d9b3a4cb0e {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+    <script src="https://cdn.jsdelivr.net/gh/python-visualization/folium@main/folium/templates/leaflet_heat.min.js"></script>
+</head>
+<body>
+    
+    
+<div style="position:fixed;bottom:30px;left:30px;z-index:1000;
+     background:#111;color:#eee;padding:14px;border-radius:8px;
+     font-family:monospace;font-size:12px;border:1px solid #333">
+  <b style="color:#c8f04a">🌐 Karachi Digital Twin</b><br>
+  <b>PM2.5 2019–2023 | LSTM R²=0.9901</b><br><br>
+  <b>Station types:</b><br>
+  🔴 Industrial &nbsp; 🟠 Commercial<br>
+  🟢 Residential &nbsp; 🔵 Mixed<br><br>
+  <b>WHO Guidelines:</b><br>
+  Annual: 5 µg/m³ &nbsp; 24h: 15 µg/m³<br><br>
+  <i style="color:#888">Click station for scenario simulation</i>
+</div>
+    
+            <div class="folium-map" id="map_fcc5b6fc1a1d7911fa9943d9b3a4cb0e" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_fcc5b6fc1a1d7911fa9943d9b3a4cb0e = L.map(
+                "map_fcc5b6fc1a1d7911fa9943d9b3a4cb0e",
+                {
+                    center: [24.8607, 67.0011],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 11,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_b9e222fc7132f23c692951e39bc5319d = L.tileLayer(
+                "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 20,
+  "maxNativeZoom": 20,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors \u0026copy; \u003ca href=\"https://carto.com/attributions\"\u003eCARTO\u003c/a\u003e",
+  "subdomains": "abcd",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_b9e222fc7132f23c692951e39bc5319d.addTo(map_fcc5b6fc1a1d7911fa9943d9b3a4cb0e);
+        
+    
+            var heat_map_901685d7323b79ffbb1e12bfd968f5d1 = L.heatLayer(
+                [[24.9056, 67.0822, 45.693982510964915], [24.856, 67.01, 45.69398251096491], [24.94, 66.98, 45.69398251096491], [24.82, 67.03, 45.69398251096491], [24.98, 67.12, 45.69398251096491], [24.89, 67.13, 45.69398251096491], [24.81, 66.99, 45.69398251096491], [24.92, 67.05, 45.69398251096491]],
+                {
+  "minOpacity": 0.5,
+  "maxZoom": 13,
+  "radius": 60,
+  "blur": 45,
+  "gradient": {
+  0.2: "green",
+  0.5: "yellow",
+  0.75: "orange",
+  1.0: "red",
+},
+}
+            );
+        
+    
+            heat_map_901685d7323b79ffbb1e12bfd968f5d1.addTo(map_fcc5b6fc1a1d7911fa9943d9b3a4cb0e);
+        
+    
+            var circle_marker_0168519cd80bdb3411e61f439538f71e = L.circleMarker(
+                [24.9056, 67.0822],
+                {"bubblingMouseEvents": true, "color": "white", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "green", "fillOpacity": 0.8, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 12.000000000000002, "stroke": true, "weight": 2}
+            ).addTo(map_fcc5b6fc1a1d7911fa9943d9b3a4cb0e);
+        
+    
+        var popup_e588b9e5e76332c34579c07e70029d3d = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_5cee5fe893b51fb72e4e0d4bf0497a36 = $(`<div id="html_5cee5fe893b51fb72e4e0d4bf0497a36" style="width: 100.0%; height: 100.0%;">     <div style='font-family:monospace;background:#111;color:#eee;padding:12px;min-width:260px;border-radius:8px'>       <b style='color:#c8f04a;font-size:14px'>Gulshan-e-Iqbal</b>       <hr style='border-color:#333;margin:6px 0'>       <b>Zone type:</b> <span style='color:{'Industrial':'#f04a7a','Commercial':'#f0c84a','Residential':'#4af0c8','Mixed':'#c8f04a'}[row['type']]'>Residential</span><br>       <b>Baseline PM2.5:</b> <span style='color:#f04a7a'>45.7 µg/m³</span><br>       <span style='color:#888;font-size:11px'>3.0× WHO annual guideline (5 µg/m³)</span>       <hr style='border-color:#333;margin:6px 0'>       <b style='color:#aaa'>Digital Twin Scenarios:</b><br>       <table style='width:100%;font-size:11px;margin-top:4px'>         <tr><td>🏭 Scenario A (Industry -30%)</td><td style='color:#f04a7a;text-align:right'>44.3 µg/m³</td><td style='color:#4af0c8;text-align:right'>−1.4</td></tr>         <tr><td>🚗 Scenario C (Traffic restr.)</td><td style='color:#f0c84a;text-align:right'>43.0 µg/m³</td><td style='color:#4af0c8;text-align:right'>−2.7</td></tr>         <tr><td>✅ Scenario E (All policies)</td><td style='color:#4af0c8;text-align:right'>41.6 µg/m³</td><td style='color:#4af0c8;text-align:right'>−4.1</td></tr>       </table>     </div>     </div>`)[0];
+                popup_e588b9e5e76332c34579c07e70029d3d.setContent(html_5cee5fe893b51fb72e4e0d4bf0497a36);
+            
+        
+
+        circle_marker_0168519cd80bdb3411e61f439538f71e.bindPopup(popup_e588b9e5e76332c34579c07e70029d3d)
+        ;
+
+        
+    
+    
+            circle_marker_0168519cd80bdb3411e61f439538f71e.bindTooltip(
+                `<div>
+                     Gulshan-e-Iqbal — 46 µg/m³
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_6b500c23bb462823f78c48b69f1f38e2 = L.circleMarker(
+                [24.856, 67.01],
+                {"bubblingMouseEvents": true, "color": "white", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "orange", "fillOpacity": 0.8, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 12.0, "stroke": true, "weight": 2}
+            ).addTo(map_fcc5b6fc1a1d7911fa9943d9b3a4cb0e);
+        
+    
+        var popup_eb525dcb7dd504be83007b09128a571b = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_18912d4ed3c8340a82cdab1984691298 = $(`<div id="html_18912d4ed3c8340a82cdab1984691298" style="width: 100.0%; height: 100.0%;">     <div style='font-family:monospace;background:#111;color:#eee;padding:12px;min-width:260px;border-radius:8px'>       <b style='color:#c8f04a;font-size:14px'>Saddar</b>       <hr style='border-color:#333;margin:6px 0'>       <b>Zone type:</b> <span style='color:{'Industrial':'#f04a7a','Commercial':'#f0c84a','Residential':'#4af0c8','Mixed':'#c8f04a'}[row['type']]'>Commercial</span><br>       <b>Baseline PM2.5:</b> <span style='color:#f04a7a'>45.7 µg/m³</span><br>       <span style='color:#888;font-size:11px'>3.0× WHO annual guideline (5 µg/m³)</span>       <hr style='border-color:#333;margin:6px 0'>       <b style='color:#aaa'>Digital Twin Scenarios:</b><br>       <table style='width:100%;font-size:11px;margin-top:4px'>         <tr><td>🏭 Scenario A (Industry -30%)</td><td style='color:#f04a7a;text-align:right'>43.4 µg/m³</td><td style='color:#4af0c8;text-align:right'>−2.3</td></tr>         <tr><td>🚗 Scenario C (Traffic restr.)</td><td style='color:#f0c84a;text-align:right'>40.2 µg/m³</td><td style='color:#4af0c8;text-align:right'>−5.5</td></tr>         <tr><td>✅ Scenario E (All policies)</td><td style='color:#4af0c8;text-align:right'>38.4 µg/m³</td><td style='color:#4af0c8;text-align:right'>−7.3</td></tr>       </table>     </div>     </div>`)[0];
+                popup_eb525dcb7dd504be83007b09128a571b.setContent(html_18912d4ed3c8340a82cdab1984691298);
+            
+        
+
+        circle_marker_6b500c23bb462823f78c48b69f1f38e2.bindPopup(popup_eb525dcb7dd504be83007b09128a571b)
+        ;
+
+        
+    
+    
+            circle_marker_6b500c23bb462823f78c48b69f1f38e2.bindTooltip(
+                `<div>
+                     Saddar — 46 µg/m³
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_122d13be18ee685adf0733739469ea51 = L.circleMarker(
+                [24.94, 66.98],
+                {"bubblingMouseEvents": true, "color": "white", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "red", "fillOpacity": 0.8, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 12.0, "stroke": true, "weight": 2}
+            ).addTo(map_fcc5b6fc1a1d7911fa9943d9b3a4cb0e);
+        
+    
+        var popup_2a5dd1f4232437f51390ade72e6dc642 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_feede1b9c6907be25c00dc60960cd758 = $(`<div id="html_feede1b9c6907be25c00dc60960cd758" style="width: 100.0%; height: 100.0%;">     <div style='font-family:monospace;background:#111;color:#eee;padding:12px;min-width:260px;border-radius:8px'>       <b style='color:#c8f04a;font-size:14px'>SITE Industrial</b>       <hr style='border-color:#333;margin:6px 0'>       <b>Zone type:</b> <span style='color:{'Industrial':'#f04a7a','Commercial':'#f0c84a','Residential':'#4af0c8','Mixed':'#c8f04a'}[row['type']]'>Industrial</span><br>       <b>Baseline PM2.5:</b> <span style='color:#f04a7a'>45.7 µg/m³</span><br>       <span style='color:#888;font-size:11px'>3.0× WHO annual guideline (5 µg/m³)</span>       <hr style='border-color:#333;margin:6px 0'>       <b style='color:#aaa'>Digital Twin Scenarios:</b><br>       <table style='width:100%;font-size:11px;margin-top:4px'>         <tr><td>🏭 Scenario A (Industry -30%)</td><td style='color:#f04a7a;text-align:right'>38.8 µg/m³</td><td style='color:#4af0c8;text-align:right'>−6.9</td></tr>         <tr><td>🚗 Scenario C (Traffic restr.)</td><td style='color:#f0c84a;text-align:right'>44.3 µg/m³</td><td style='color:#4af0c8;text-align:right'>−1.4</td></tr>         <tr><td>✅ Scenario E (All policies)</td><td style='color:#4af0c8;text-align:right'>37.5 µg/m³</td><td style='color:#4af0c8;text-align:right'>−8.2</td></tr>       </table>     </div>     </div>`)[0];
+                popup_2a5dd1f4232437f51390ade72e6dc642.setContent(html_feede1b9c6907be25c00dc60960cd758);
+            
+        
+
+        circle_marker_122d13be18ee685adf0733739469ea51.bindPopup(popup_2a5dd1f4232437f51390ade72e6dc642)
+        ;
+
+        
+    
+    
+            circle_marker_122d13be18ee685adf0733739469ea51.bindTooltip(
+                `<div>
+                     SITE Industrial — 46 µg/m³
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_c08902d5efb87a8506a5349692b8b660 = L.circleMarker(
+                [24.82, 67.03],
+                {"bubblingMouseEvents": true, "color": "white", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "red", "fillOpacity": 0.8, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 12.0, "stroke": true, "weight": 2}
+            ).addTo(map_fcc5b6fc1a1d7911fa9943d9b3a4cb0e);
+        
+    
+        var popup_cf0775db5698e852b5a60dbcc08a8086 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_395cb1b3630015150c4dafc0916dfc47 = $(`<div id="html_395cb1b3630015150c4dafc0916dfc47" style="width: 100.0%; height: 100.0%;">     <div style='font-family:monospace;background:#111;color:#eee;padding:12px;min-width:260px;border-radius:8px'>       <b style='color:#c8f04a;font-size:14px'>Korangi Industrial</b>       <hr style='border-color:#333;margin:6px 0'>       <b>Zone type:</b> <span style='color:{'Industrial':'#f04a7a','Commercial':'#f0c84a','Residential':'#4af0c8','Mixed':'#c8f04a'}[row['type']]'>Industrial</span><br>       <b>Baseline PM2.5:</b> <span style='color:#f04a7a'>45.7 µg/m³</span><br>       <span style='color:#888;font-size:11px'>3.0× WHO annual guideline (5 µg/m³)</span>       <hr style='border-color:#333;margin:6px 0'>       <b style='color:#aaa'>Digital Twin Scenarios:</b><br>       <table style='width:100%;font-size:11px;margin-top:4px'>         <tr><td>🏭 Scenario A (Industry -30%)</td><td style='color:#f04a7a;text-align:right'>38.8 µg/m³</td><td style='color:#4af0c8;text-align:right'>−6.9</td></tr>         <tr><td>🚗 Scenario C (Traffic restr.)</td><td style='color:#f0c84a;text-align:right'>44.3 µg/m³</td><td style='color:#4af0c8;text-align:right'>−1.4</td></tr>         <tr><td>✅ Scenario E (All policies)</td><td style='color:#4af0c8;text-align:right'>37.5 µg/m³</td><td style='color:#4af0c8;text-align:right'>−8.2</td></tr>       </table>     </div>     </div>`)[0];
+                popup_cf0775db5698e852b5a60dbcc08a8086.setContent(html_395cb1b3630015150c4dafc0916dfc47);
+            
+        
+
+        circle_marker_c08902d5efb87a8506a5349692b8b660.bindPopup(popup_cf0775db5698e852b5a60dbcc08a8086)
+        ;
+
+        
+    
+    
+            circle_marker_c08902d5efb87a8506a5349692b8b660.bindTooltip(
+                `<div>
+                     Korangi Industrial — 46 µg/m³
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_d875f5fccafb570659f30f3a2fd43605 = L.circleMarker(
+                [24.98, 67.12],
+                {"bubblingMouseEvents": true, "color": "white", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "green", "fillOpacity": 0.8, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 12.0, "stroke": true, "weight": 2}
+            ).addTo(map_fcc5b6fc1a1d7911fa9943d9b3a4cb0e);
+        
+    
+        var popup_6fa79c27cd6006b039527e3fe9373284 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_6d65ec2777bbeae271e227ec7f9f036d = $(`<div id="html_6d65ec2777bbeae271e227ec7f9f036d" style="width: 100.0%; height: 100.0%;">     <div style='font-family:monospace;background:#111;color:#eee;padding:12px;min-width:260px;border-radius:8px'>       <b style='color:#c8f04a;font-size:14px'>North Nazimabad</b>       <hr style='border-color:#333;margin:6px 0'>       <b>Zone type:</b> <span style='color:{'Industrial':'#f04a7a','Commercial':'#f0c84a','Residential':'#4af0c8','Mixed':'#c8f04a'}[row['type']]'>Residential</span><br>       <b>Baseline PM2.5:</b> <span style='color:#f04a7a'>45.7 µg/m³</span><br>       <span style='color:#888;font-size:11px'>3.0× WHO annual guideline (5 µg/m³)</span>       <hr style='border-color:#333;margin:6px 0'>       <b style='color:#aaa'>Digital Twin Scenarios:</b><br>       <table style='width:100%;font-size:11px;margin-top:4px'>         <tr><td>🏭 Scenario A (Industry -30%)</td><td style='color:#f04a7a;text-align:right'>44.3 µg/m³</td><td style='color:#4af0c8;text-align:right'>−1.4</td></tr>         <tr><td>🚗 Scenario C (Traffic restr.)</td><td style='color:#f0c84a;text-align:right'>43.0 µg/m³</td><td style='color:#4af0c8;text-align:right'>−2.7</td></tr>         <tr><td>✅ Scenario E (All policies)</td><td style='color:#4af0c8;text-align:right'>41.6 µg/m³</td><td style='color:#4af0c8;text-align:right'>−4.1</td></tr>       </table>     </div>     </div>`)[0];
+                popup_6fa79c27cd6006b039527e3fe9373284.setContent(html_6d65ec2777bbeae271e227ec7f9f036d);
+            
+        
+
+        circle_marker_d875f5fccafb570659f30f3a2fd43605.bindPopup(popup_6fa79c27cd6006b039527e3fe9373284)
+        ;
+
+        
+    
+    
+            circle_marker_d875f5fccafb570659f30f3a2fd43605.bindTooltip(
+                `<div>
+                     North Nazimabad — 46 µg/m³
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_5d7db147f446856fa343c9b066602698 = L.circleMarker(
+                [24.89, 67.13],
+                {"bubblingMouseEvents": true, "color": "white", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "green", "fillOpacity": 0.8, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 12.0, "stroke": true, "weight": 2}
+            ).addTo(map_fcc5b6fc1a1d7911fa9943d9b3a4cb0e);
+        
+    
+        var popup_33d296850dbaae5a312e5f34aa87f14a = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_76e9af2f24b91ab5e5816ebb7d52ddaa = $(`<div id="html_76e9af2f24b91ab5e5816ebb7d52ddaa" style="width: 100.0%; height: 100.0%;">     <div style='font-family:monospace;background:#111;color:#eee;padding:12px;min-width:260px;border-radius:8px'>       <b style='color:#c8f04a;font-size:14px'>Gulistan Jauhar</b>       <hr style='border-color:#333;margin:6px 0'>       <b>Zone type:</b> <span style='color:{'Industrial':'#f04a7a','Commercial':'#f0c84a','Residential':'#4af0c8','Mixed':'#c8f04a'}[row['type']]'>Residential</span><br>       <b>Baseline PM2.5:</b> <span style='color:#f04a7a'>45.7 µg/m³</span><br>       <span style='color:#888;font-size:11px'>3.0× WHO annual guideline (5 µg/m³)</span>       <hr style='border-color:#333;margin:6px 0'>       <b style='color:#aaa'>Digital Twin Scenarios:</b><br>       <table style='width:100%;font-size:11px;margin-top:4px'>         <tr><td>🏭 Scenario A (Industry -30%)</td><td style='color:#f04a7a;text-align:right'>44.3 µg/m³</td><td style='color:#4af0c8;text-align:right'>−1.4</td></tr>         <tr><td>🚗 Scenario C (Traffic restr.)</td><td style='color:#f0c84a;text-align:right'>43.0 µg/m³</td><td style='color:#4af0c8;text-align:right'>−2.7</td></tr>         <tr><td>✅ Scenario E (All policies)</td><td style='color:#4af0c8;text-align:right'>41.6 µg/m³</td><td style='color:#4af0c8;text-align:right'>−4.1</td></tr>       </table>     </div>     </div>`)[0];
+                popup_33d296850dbaae5a312e5f34aa87f14a.setContent(html_76e9af2f24b91ab5e5816ebb7d52ddaa);
+            
+        
+
+        circle_marker_5d7db147f446856fa343c9b066602698.bindPopup(popup_33d296850dbaae5a312e5f34aa87f14a)
+        ;
+
+        
+    
+    
+            circle_marker_5d7db147f446856fa343c9b066602698.bindTooltip(
+                `<div>
+                     Gulistan Jauhar — 46 µg/m³
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_b46b0cbf99bab9bf70db8b51b741fdc6 = L.circleMarker(
+                [24.81, 66.99],
+                {"bubblingMouseEvents": true, "color": "white", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "red", "fillOpacity": 0.8, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 12.0, "stroke": true, "weight": 2}
+            ).addTo(map_fcc5b6fc1a1d7911fa9943d9b3a4cb0e);
+        
+    
+        var popup_3cd62ced50c75fd0044565f3ff843e2c = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_1a836734266f3087e467d27a809d3808 = $(`<div id="html_1a836734266f3087e467d27a809d3808" style="width: 100.0%; height: 100.0%;">     <div style='font-family:monospace;background:#111;color:#eee;padding:12px;min-width:260px;border-radius:8px'>       <b style='color:#c8f04a;font-size:14px'>Landhi</b>       <hr style='border-color:#333;margin:6px 0'>       <b>Zone type:</b> <span style='color:{'Industrial':'#f04a7a','Commercial':'#f0c84a','Residential':'#4af0c8','Mixed':'#c8f04a'}[row['type']]'>Industrial</span><br>       <b>Baseline PM2.5:</b> <span style='color:#f04a7a'>45.7 µg/m³</span><br>       <span style='color:#888;font-size:11px'>3.0× WHO annual guideline (5 µg/m³)</span>       <hr style='border-color:#333;margin:6px 0'>       <b style='color:#aaa'>Digital Twin Scenarios:</b><br>       <table style='width:100%;font-size:11px;margin-top:4px'>         <tr><td>🏭 Scenario A (Industry -30%)</td><td style='color:#f04a7a;text-align:right'>38.8 µg/m³</td><td style='color:#4af0c8;text-align:right'>−6.9</td></tr>         <tr><td>🚗 Scenario C (Traffic restr.)</td><td style='color:#f0c84a;text-align:right'>44.3 µg/m³</td><td style='color:#4af0c8;text-align:right'>−1.4</td></tr>         <tr><td>✅ Scenario E (All policies)</td><td style='color:#4af0c8;text-align:right'>37.5 µg/m³</td><td style='color:#4af0c8;text-align:right'>−8.2</td></tr>       </table>     </div>     </div>`)[0];
+                popup_3cd62ced50c75fd0044565f3ff843e2c.setContent(html_1a836734266f3087e467d27a809d3808);
+            
+        
+
+        circle_marker_b46b0cbf99bab9bf70db8b51b741fdc6.bindPopup(popup_3cd62ced50c75fd0044565f3ff843e2c)
+        ;
+
+        
+    
+    
+            circle_marker_b46b0cbf99bab9bf70db8b51b741fdc6.bindTooltip(
+                `<div>
+                     Landhi — 46 µg/m³
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_9708dbbf8eef3acce8e69d571bf5e677 = L.circleMarker(
+                [24.92, 67.05],
+                {"bubblingMouseEvents": true, "color": "white", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.8, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 12.0, "stroke": true, "weight": 2}
+            ).addTo(map_fcc5b6fc1a1d7911fa9943d9b3a4cb0e);
+        
+    
+        var popup_fcd17fbed1f27d4461967bc1cec3161a = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_4bebe394c214c03f84acc304cb23794b = $(`<div id="html_4bebe394c214c03f84acc304cb23794b" style="width: 100.0%; height: 100.0%;">     <div style='font-family:monospace;background:#111;color:#eee;padding:12px;min-width:260px;border-radius:8px'>       <b style='color:#c8f04a;font-size:14px'>Federal B Area</b>       <hr style='border-color:#333;margin:6px 0'>       <b>Zone type:</b> <span style='color:{'Industrial':'#f04a7a','Commercial':'#f0c84a','Residential':'#4af0c8','Mixed':'#c8f04a'}[row['type']]'>Mixed</span><br>       <b>Baseline PM2.5:</b> <span style='color:#f04a7a'>45.7 µg/m³</span><br>       <span style='color:#888;font-size:11px'>3.0× WHO annual guideline (5 µg/m³)</span>       <hr style='border-color:#333;margin:6px 0'>       <b style='color:#aaa'>Digital Twin Scenarios:</b><br>       <table style='width:100%;font-size:11px;margin-top:4px'>         <tr><td>🏭 Scenario A (Industry -30%)</td><td style='color:#f04a7a;text-align:right'>42.5 µg/m³</td><td style='color:#4af0c8;text-align:right'>−3.2</td></tr>         <tr><td>🚗 Scenario C (Traffic restr.)</td><td style='color:#f0c84a;text-align:right'>41.1 µg/m³</td><td style='color:#4af0c8;text-align:right'>−4.6</td></tr>         <tr><td>✅ Scenario E (All policies)</td><td style='color:#4af0c8;text-align:right'>39.3 µg/m³</td><td style='color:#4af0c8;text-align:right'>−6.4</td></tr>       </table>     </div>     </div>`)[0];
+                popup_fcd17fbed1f27d4461967bc1cec3161a.setContent(html_4bebe394c214c03f84acc304cb23794b);
+            
+        
+
+        circle_marker_9708dbbf8eef3acce8e69d571bf5e677.bindPopup(popup_fcd17fbed1f27d4461967bc1cec3161a)
+        ;
+
+        
+    
+    
+            circle_marker_9708dbbf8eef3acce8e69d571bf5e677.bindTooltip(
+                `<div>
+                     Federal B Area — 46 µg/m³
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+</script>
+</html>

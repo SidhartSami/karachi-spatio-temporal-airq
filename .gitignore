@@ -29,12 +29,15 @@ ENV/
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
 
-# Data (Ignore raw data, potentially keep small processed files)
+# Data - Allow small processed files, ignore large ones
 data/raw/
-data/processed/
-outputs/
-!data/.gitkeep
-!data/processed/.gitkeep
+data/processed/master_dataset_*.csv
+data/processed/merged_karachi_dataset.csv
+notebooks/data/processed/master_dataset_*.csv
+notebooks/data/processed/merged_karachi_dataset.csv
+outputs/*.png
+outputs/*.html
+outputs/*.pdf
 
 # IDEs
 .vscode/

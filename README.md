@@ -4,7 +4,7 @@
 [![Python](https://img.shields.io/badge/Python-3.8+-blue)](https://www.python.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 
-A comprehensive spatio-temporal machine learning framework for PM2.5 prediction and policy simulation in Karachi, Pakistan, integrating satellite remote sensing, meteorological data, and advanced ML techniques.
+A comprehensive spatio-temporal machine learning framework for PM2.5 prediction and policy simulation in Karachi, Pakistan, integrating satellite remote sensing, meteorological data, and advanced Machine Learning techniques.
 
 ## Research Overview
 

@@ -131,13 +131,27 @@ def impute_aod_by_station(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def validate(df: pd.DataFrame) -> None:
-    """Sanity checks before saving."""
-    assert df.isnull().sum().sum() == 0, (
-        f"Dataset still has NaNs after imputation!\n{df.isnull().sum()[df.isnull().sum()>0]}"
-    )
+    """Sanity checks before saving. Raises RuntimeError (not AssertionError)
+    so failures are not stripped under `python -O` (ISSUES_FOUND.md M8).
+
+    Allows NaN in *feature* columns that legitimately have gaps (ERA5 partial
+    coverage, VIIRS monthly-lag edges, etc.). Fails only if the *AOD imputation
+    target* still has NaN, or if dead columns are present."""
+    for col in AOD_COLUMNS:
+        if col in df.columns and df[col].isnull().any():
+            raise RuntimeError(
+                f"AOD target column '{col}' still has {df[col].isnull().sum()} NaNs."
+            )
     for col in DEAD_COLUMNS:
-        assert col not in df.columns, f"Dead column '{col}' still present!"
-    log.info("✅ Validation passed — no NaNs, dead columns removed.")
+        if col in df.columns:
+            raise RuntimeError(f"Dead column '{col}' still present!")
+    remaining = df.isnull().sum()
+    bad_cols = remaining[remaining > 0]
+    if len(bad_cols):
+        log.warning("Dataset has %d NaN in feature columns (allowed):\n%s",
+                    len(bad_cols), bad_cols.to_string())
+    else:
+        log.info("✅ Validation passed — no NaNs, dead columns removed.")
 
 
 def save(df: pd.DataFrame, path: Path) -> None:

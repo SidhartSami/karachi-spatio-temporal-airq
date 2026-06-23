@@ -1,0 +1,22 @@
+{
+  "_meta": {
+    "description": "Single source of truth for Karachi monitoring stations and supporting constants. Edit here, not in any pipeline script.",
+    "bbox_west": 66.85,
+    "bbox_south": 24.75,
+    "bbox_east": 67.25,
+    "bbox_north": 25.05,
+    "lat_lon_order": "object form is {lat, lon}; serialised as flat list is [lon, lat] for GEE geometry compatibility"
+  },
+  "stations": [
+    {"name": "Gulshan-e-Iqbal",    "lat": 24.9056, "lon": 67.0822, "zone_type": "residential"},
+    {"name": "Saddar",             "lat": 24.8560, "lon": 67.0100, "zone_type": "commercial"},
+    {"name": "SITE_Industrial",    "lat": 24.9400, "lon": 66.9800, "zone_type": "industrial"},
+    {"name": "Korangi_Industrial", "lat": 24.8200, "lon": 67.0300, "zone_type": "industrial"},
+    {"name": "North_Nazimabad",    "lat": 24.9800, "lon": 67.1200, "zone_type": "residential"},
+    {"name": "Gulistan_Jauhar",    "lat": 24.8900, "lon": 67.1300, "zone_type": "residential"},
+    {"name": "Landhi",             "lat": 24.8100, "lon": 66.9900, "zone_type": "industrial"},
+    {"name": "Federal_B_Area",     "lat": 24.9200, "lon": 67.0500, "zone_type": "mixed"}
+  ],
+  "us_consulate_openaq_id": 225442,
+  "gee_project_default": "air-quality-500217"
+}

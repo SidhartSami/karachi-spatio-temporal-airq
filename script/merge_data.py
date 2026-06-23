@@ -1,23 +1,38 @@
-import pandas as pd
-import numpy as np
-from pathlib import Path
+import argparse
 import os
-import holidays
-from datetime import datetime
+from pathlib import Path
 
-def load_gee_csv(pattern, label, value_cols):
-    """Load a GEE-exported CSV from data/raw/ and ensure value columns exist."""
-    matches = list(Path('data/raw').glob(f'*{pattern}*.csv'))
-    
+import holidays
+import numpy as np
+import pandas as pd
+
+def load_gee_csv(pattern, label, value_cols, raw_dir='data/raw'):
+    """Load a GEE-exported CSV from raw_dir/ and ensure value columns exist.
+
+    `pattern` is a glob fragment matched against filenames. The _v2 GEE exports
+    use the long band name (e.g. `absorbing_aerosol_index_v2.csv`) which does
+    not contain the short label (`aer_ai`); accept the long name as an
+    additional glob if it appears in any value_col.
+    """
+    extra_patterns = [v for v in value_cols if v and v != pattern]
+    patterns = [pattern] + extra_patterns
+    matches = []
+    seen = set()
+    for pat in patterns:
+        for m in Path(raw_dir).glob(f'*{pat}*.csv'):
+            if m.name not in seen:
+                matches.append(m)
+                seen.add(m.name)
+
     # Priority: _citywide > _v2 > original
     citywide_matches = [m for m in matches if '_citywide' in m.name]
     v2_matches = [m for m in matches if '_v2' in m.name]
-    
+
     if citywide_matches:
         matches = citywide_matches
     elif v2_matches:
         matches = v2_matches
-    
+
     if not matches:
         print(f'  ⚠️  No file matching *{pattern}*.csv in data/raw/')
         return None
@@ -79,26 +94,26 @@ def load_gee_csv(pattern, label, value_cols):
     print(f'  ✓ {label:<25}: {df.shape[0]:>6} rows, {df.shape[1]} cols → {matches[0].name}')
     return df
 
-def main():
-    print('📂 Loading GEE exports from data/raw/...')
-    
+def main(raw_dir: str = 'data/raw', out_path: str = 'data/processed/merged_karachi_dataset.csv'):
+    print(f'📂 Loading GEE exports from {raw_dir}/...')
+
     # S5P Value column names (as expected from asset band names)
-    df_aer   = load_gee_csv('aer_ai',  'S5P Aerosol Index',     ['absorbing_aerosol_index'])
-    df_no2   = load_gee_csv('no2',     'S5P NO2',               ['NO2_column_number_density'])
-    df_so2   = load_gee_csv('so2',     'S5P SO2',               ['SO2_column_number_density'])
-    df_co    = load_gee_csv('co',      'S5P CO',                ['CO_column_number_density'])
+    df_aer   = load_gee_csv('aer_ai',  'S5P Aerosol Index',     ['absorbing_aerosol_index'], raw_dir=raw_dir)
+    df_no2   = load_gee_csv('no2',     'S5P NO2',               ['NO2_column_number_density'], raw_dir=raw_dir)
+    df_so2   = load_gee_csv('so2',     'S5P SO2',               ['SO2_column_number_density'], raw_dir=raw_dir)
+    df_co    = load_gee_csv('co',      'S5P CO',                ['CO_column_number_density'], raw_dir=raw_dir)
     
     # MODIS (Note: run_data_collection uses Optical_Depth_047/055)
-    df_modis = load_gee_csv('modis',   'MODIS AOD',             ['Optical_Depth_047', 'Optical_Depth_055'])
-    
+    df_modis = load_gee_csv('modis',   'MODIS AOD',             ['Optical_Depth_047', 'Optical_Depth_055'], raw_dir=raw_dir)
+
     # ERA5 (Meteo)
-    df_era5  = load_gee_csv('era5',    'ERA5 Meteorology',      ['wind_speed_10m', 'relative_humidity', 'temperature_2m'])
+    df_era5  = load_gee_csv('era5',    'ERA5 Meteorology',      ['wind_speed_10m', 'relative_humidity', 'temperature_2m'], raw_dir=raw_dir)
     if df_era5 is not None:
         df_era5 = df_era5.rename(columns={'wind_speed_10m': 'wind_speed', 'relative_humidity': 'rh'})
-    
+
     # Optional
-    df_viirs = load_gee_csv('viirs',   'VIIRS Nighttime Light', ['avg_rad', 'mean'])
-    df_s2    = load_gee_csv('ndvi',    'Sentinel-2 NDVI/NDBI',  ['NDVI', 'NDBI'])
+    df_viirs = load_gee_csv('viirs',   'VIIRS Nighttime Light', ['avg_rad', 'mean'], raw_dir=raw_dir)
+    df_s2    = load_gee_csv('ndvi',    'Sentinel-2 NDVI/NDBI',  ['NDVI', 'NDBI'], raw_dir=raw_dir)
 
     print('\n🔗 Building master merged dataset...')
     
@@ -167,31 +182,46 @@ def main():
         merged = smart_merge(merged, modis_clean, how='left')
 
     # ── Merge VIIRS (Monthly) ─────────────────────────────────────────────────
+    # C5 fix (ISSUES_FOUND.md): prior version broadcast each month's NTL value
+    # to every day of the *same* month. That means day 1 of March used March's
+    # average NTL — a value not knowable until month-end. We now lag by 1
+    # month so day D in month M uses month M-1's NTL (the value actually
+    # available at time D).
     if df_viirs is not None:
+        # Some GEE exports give us `year_month` (e.g. "2019-01") instead of a
+        # real `date` column. Synthesise a date so the lag logic below works.
+        if 'date' not in df_viirs.columns and 'year_month' in df_viirs.columns:
+            df_viirs['date'] = pd.to_datetime(df_viirs['year_month'] + '-01')
+
         if 'date' in df_viirs.columns:
             df_viirs['year_month'] = df_viirs['date'].dt.strftime('%Y-%m')
-        
+
         if 'year_month' in df_viirs.columns and not merged.empty:
-            merged['year_month'] = merged['date'].dt.strftime('%Y-%m')
-            # Use 'avg_rad' if it has data, else 'mean'
+            # Lag VIIRS by one month: a day in 2021-03 sees 2021-02's NTL.
+            df_viirs['year_month_for_lag'] = (
+                df_viirs['date'] - pd.DateOffset(months=1)
+            ).dt.strftime('%Y-%m')
+
+            merged['year_month_for_lag'] = merged['date'].dt.strftime('%Y-%m')
+
             ntl_col = 'avg_rad' if ('avg_rad' in df_viirs.columns and df_viirs['avg_rad'].notnull().any()) else 'mean'
-            
-            viirs_cols = ['year_month']
+
+            viirs_cols = ['year_month_for_lag']
             if 'station' in df_viirs.columns: viirs_cols.append('station')
             viirs_cols.append(ntl_col)
-            
+
             viirs_subset = df_viirs[[c for c in viirs_cols if c in df_viirs.columns]]
-            
-            merge_on = ['year_month']
+
+            merge_on = ['year_month_for_lag']
             if 'station' in merged.columns and 'station' in viirs_subset.columns:
                 merge_on.append('station')
             elif 'station' in viirs_subset.columns and 'station' not in merged.columns:
                 # If merged is citywide but viirs has stations, average viirs to citywide
-                viirs_subset = viirs_subset.groupby('year_month')[ntl_col].mean().reset_index()
-            
-            merged = pd.merge(merged, viirs_subset.rename(columns={ntl_col: 'viirs_ntl'}), 
+                viirs_subset = viirs_subset.groupby('year_month_for_lag')[ntl_col].mean().reset_index()
+
+            merged = pd.merge(merged, viirs_subset.rename(columns={ntl_col: 'viirs_ntl'}),
                               on=merge_on, how='left')
-            merged.drop(columns='year_month', inplace=True)
+            merged.drop(columns='year_month_for_lag', inplace=True)
 
     # ⚙️ Feature Engineering
     print('⚙️  Engineering temporal and Pakistan-specific features...')
@@ -220,15 +250,21 @@ def main():
     df['is_weekend'] = (df['day_of_week'] >= 5).astype(int)
 
     # Save
-    os.makedirs('data/processed', exist_ok=True)
-    out_file = 'data/processed/merged_karachi_dataset.csv'
-    df.to_csv(out_file, index=False)
-    print(f'\n✅ SUCCESS: Dataset saved to {out_file}')
+    Path(out_path).parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(out_path, index=False)
+    print(f'\n✅ SUCCESS: Dataset saved to {out_path}')
     print(f'   Final Shape: {df.shape}')
-    
+
     if df[pollutant_cols].isnull().all().all():
         print("\n🛑 CRITICAL: The dataset is mostly NaNs. We need to re-run the GEE data collection.")
         print("   The S5P points were likely cloud-masked or scale was too small.")
 
+
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Merge GEE satellite + meteo exports into one daily-per-station CSV.")
+    parser.add_argument("--raw-dir",  default="data/raw",
+                        help="Directory containing GEE-exported CSVs (default: data/raw).")
+    parser.add_argument("--out-path", default="data/processed/merged_karachi_dataset.csv",
+                        help="Output CSV path.")
+    args = parser.parse_args()
+    main(raw_dir=args.raw_dir, out_path=args.out_path)

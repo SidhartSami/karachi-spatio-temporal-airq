@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html><head><meta charset="UTF-8"><title>Karachi AirQ Twin — Random Forest</title>
+<html><head><meta charset="UTF-8"><title>Karachi AirQ Twin — LightGBM</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{margin:0;background:#0d0d14;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#fff;overflow:hidden}
@@ -41,15 +41,15 @@ h1{font-size:1.3rem;font-weight:700;color:#38bdf8;margin-bottom:4px}
   <div class="subtitle">Real-model PM2.5 dashboard (2023 hold-out mean)</div>
   <div class="current-model">
     <div class="current-label">Active Model</div>
-    <div class="current-name">Random Forest</div>
+    <div class="current-name">LightGBM</div>
   </div>
   <div class="stats">
     <div class="stat-box">
-      <div class="stat-value danger">50.0</div>
+      <div class="stat-value warning">29.1</div>
       <div class="stat-label">Mean PM2.5<br>µg/m³</div>
     </div>
     <div class="stat-box">
-      <div class="stat-value">50.6</div>
+      <div class="stat-value">29.1</div>
       <div class="stat-label">Max PM2.5<br>µg/m³</div>
     </div>
     <div class="stat-box">
@@ -66,13 +66,13 @@ h1{font-size:1.3rem;font-weight:700;color:#38bdf8;margin-bottom:4px}
         <a href="model_ensemble_average.html" class="model-btn " style="--model-color: #888">
             <span class="model-dot" style="background: #888"></span>Ensemble Average
         </a>
-        <a href="model_random_forest.html" class="model-btn active" style="--model-color: #c8f04a">
+        <a href="model_random_forest.html" class="model-btn " style="--model-color: #c8f04a">
             <span class="model-dot" style="background: #c8f04a"></span>Random Forest
         </a>
         <a href="model_xgboost_ensemble.html" class="model-btn " style="--model-color: #f04a7a">
             <span class="model-dot" style="background: #f04a7a"></span>XGBoost Ensemble
         </a>
-        <a href="model_lightgbm.html" class="model-btn " style="--model-color: #4af0c8">
+        <a href="model_lightgbm.html" class="model-btn active" style="--model-color: #4af0c8">
             <span class="model-dot" style="background: #4af0c8"></span>LightGBM
         </a>
   <div class="legend">
@@ -86,7 +86,7 @@ h1{font-size:1.3rem;font-weight:700;color:#38bdf8;margin-bottom:4px}
   </div>
   <div class="who-info">
     ⚠️ WHO Annual mean: 5 µg/m³ &nbsp;|&nbsp; 24-hour: 15 µg/m³<br>
-    Karachi mean = 50.0 µg/m³ = <b>10.0× over the annual guideline</b>
+    Karachi mean = 29.1 µg/m³ = <b>5.8× over the annual guideline</b>
   </div>
   <div class="feature-info">
     <b>Predictions come from a real trained model</b>, not synthetic hotspots.
@@ -95,5 +95,5 @@ h1{font-size:1.3rem;font-weight:700;color:#38bdf8;margin-bottom:4px}
     average context). The grid is IDW-interpolated.
   </div>
 </div>
-<iframe id="map-frame" src="map_random_forest.html"></iframe>
+<iframe id="map-frame" src="map_lightgbm.html"></iframe>
 </body></html>

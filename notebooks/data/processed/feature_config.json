@@ -1,30 +1,34 @@
 {
   "final_features": [
     "Optical_Depth_055",
-    "month_cos",
-    "month",
     "wind_speed",
+    "month",
     "month_sin",
-    "day_of_week"
+    "day_of_week",
+    "month_cos",
+    "is_weekend",
+    "viirs_ntl"
   ],
   "target": "pm25",
-  "n_features": 6,
+  "n_features": 8,
   "category_satellite": [
     "Optical_Depth_055",
-    "month_cos"
+    "month_cos",
+    "viirs_ntl"
   ],
   "category_meteorology": [
     "wind_speed"
   ],
   "category_temporal": [
-    "month_cos",
     "month",
     "month_sin",
-    "day_of_week"
+    "day_of_week",
+    "month_cos",
+    "is_weekend"
   ],
   "category_lag_rolling": [],
   "category_station": [],
   "vif_threshold": 10.0,
-  "lasso_alpha": 0.008685113737513529,
-  "rfecv_n_optimal": 6
+  "lasso_alpha": 0.9540954763499944,
+  "rfecv_n_optimal": 4
 }

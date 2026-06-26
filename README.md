@@ -10,6 +10,17 @@ MODIS MAIAC, VIIRS), meteorological reanalysis (ERA5), and ground-truth
 observations from OpenAQ, the US Consulate Karachi monitor, and NASA
 MERRA-2 surface PM$_{2.5}$.
 
+## Citation
+
+If you use this work, please cite:
+
+**Sami, S. (2026).** Spatio-Temporal Predictive Modelling of PM2.5 in Karachi from Multi-Source Satellite, Meteorological and Ground Observations (2019–2023). *Preprint.* https://doi.org/10.5281/zenodo.20923993
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20923993.svg)](https://doi.org/10.5281/zenodo.20923993)
+
+The full preprint PDF is included in this repository at
+[`docs/Sami_2026_PM25_Karachi_Spatio_Temporal.pdf`](docs/Sami_2026_PM25_Karachi_Spatio_Temporal.pdf).
+
 ## Research Overview
 
 This project addresses Karachi's severe air pollution problem (PM$_{2.5}$

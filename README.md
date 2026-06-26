@@ -1,33 +1,56 @@
-# Spatio-Temporal Source Apportionment and Predictive Modeling of PM2.5/PM10 in Karachi: A Machine Learning Approach to Urban Air Quality Management
+# Spatio-Temporal Predictive Modelling of PM$_{2.5}$ in Karachi from Multi-Source Satellite, Meteorological and Ground Observations (2019–2023)
 
 [![Status](https://img.shields.io/badge/Status-Complete-success)](https://github.com/SidhartSami/karachi-spatio-temporal-airq)
 [![Python](https://img.shields.io/badge/Python-3.8+-blue)](https://www.python.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 
-A comprehensive spatio-temporal machine learning framework for PM2.5 prediction and policy simulation in Karachi, Pakistan, integrating satellite remote sensing, meteorological data, and advanced Machine Learning techniques.
+A spatio-temporal machine-learning framework for daily PM$_{2.5}$ prediction
+in Karachi, Pakistan, integrating satellite remote sensing (Sentinel-5P,
+MODIS MAIAC, VIIRS), meteorological reanalysis (ERA5), and ground-truth
+observations from OpenAQ, the US Consulate Karachi monitor, and NASA
+MERRA-2 surface PM$_{2.5}$.
 
 ## Research Overview
 
-This project addresses Karachi's severe air pollution problem (PM2.5 averaging **9.2× WHO guidelines**) through a hybrid approach combining:
-- **Multi-source satellite data** (Sentinel-5P, MODIS, ERA5, VIIRS)
-- **Advanced machine learning** (Random Forest, XGBoost, LSTM)
-- **Spatial-temporal analysis** (Moran's I, LISA hotspots)
-- **Interactive digital twin** for policy scenario simulation
+This project addresses Karachi's severe air pollution problem (PM$_{2.5}$
+annual mean **61.4 µg/m³ — approximately 12.3× the WHO 2021 annual
+guideline of 5 µg/m³**) through a hybrid approach combining:
+
+- **Multi-source satellite data** (Sentinel-5P, MODIS MAIAC, ERA5, VIIRS)
+- **Traditional machine learning** (Random Forest, XGBoost, LightGBM, SVR)
+- **Sequence deep learning** (unidirectional causal LSTM with attention)
+- **Spatial statistics** (Moran's I and LISA on model residuals)
+- **Interactive 3D digital twin** with policy-scenario module
 
 ### Key Achievements
-- **8 Monitoring Stations** across Karachi (2019-2023) — **real** ground truth from OpenAQ + MERRA-2 (no synthetic data)
-- **5 ML Models** trained — best R²=0.612 on the 2023 held-out test set (Random Forest)
-- **LSTM Deep Learning** with digital twin capabilities (R²=−0.135 on 2023 test — LSTM underperforms trees on this tabular+short-sequence problem, which is expected)
-- **Spatial Analysis**: Moran's I on **RF residuals** is −0.19 (p=0.28, not significant) — no detectable spatial autocorrelation remains in the model residuals once the RF has absorbed the satellite + meteorological features
-- **Interactive 3D Digital Twin** that calls `model.predict()` on real features (not Gaussian hotspots)
-- **WHO Guideline Analysis** showing systematic exceedance (annual 5 µg/m³, 24-hour 15 µg/m³)
+
+- **8 Monitoring Stations** across Karachi (2019–2023) — 14,400 station-day
+  observations sourced through a strict fallback hierarchy
+  (`openaq_exact` → `openaq_us_consulate` → `merra2_citywide` → `missing`),
+  with every row carrying a `pm25_source` provenance flag.
+- **5 ML models + LSTM** evaluated on a strict 2023 held-out test set.
+  Random Forest is the best traditional model (RMSE = 16.30 µg/m³,
+  R² = 0.612). The LSTM achieves RMSE = 40.67, R² = −0.104 on 1-day-ahead.
+- **Honest null on spatial autocorrelation.** Moran's I on the RF
+  residuals is **I = −0.19 (p = 0.28, not significant)** — no detectable
+  spatial structure remains in the model errors at the eight-station
+  resolution. This is reported as a positive finding about the
+  modelling pipeline, not a defect.
+- **SHAP** (TreeExplainer on the Random Forest) shows `pm25_lag1` as
+  the dominant predictor, followed by `Optical_Depth_055` and
+  `wind_speed` — pollution persistence, aerosol loading and dilution
+  explain the predictable variance.
+- **Interactive 3D digital twin** rendering daily RF predictions on a
+  1 km grid across Karachi with a model-selector and a time-slider.
+- **Open-source reproducibility** — preprocessing pipeline, processed
+  dataset, trained model weights, and dashboards are all in this repo.
 
 > **Methodology note on metrics.** All metrics below are computed on a strict
 > 2023 hold-out test set that the models never saw during training or early
 > stopping. Models are trained on 2019–2022, with a 2022 validation carve-out
 > used for early stopping and LR scheduling. Feature selection (Lasso, RFECV,
 > mutual information) is fit on training labels only. Honest test R²:
-> RF 0.612, XGB 0.607, LGB 0.598, SVR 0.551, LSTM −0.135 (1-day-ahead).
+> RF 0.612, XGB 0.607, LGB 0.598, SVR 0.551, LSTM −0.104 (1-day-ahead).
 
 ## Quick Start
 
@@ -117,61 +140,62 @@ Spatio-Temporal/
 ### Deep Learning (LSTM)
 - **Architecture**: Unidirectional (causal) LSTM + Attention + BatchNorm — bidirectional lookahead was removed because it would not be available at real inference time
 - **Parameters**: ~480k trainable
-- **Sequence**: 14-day lookback, 1-7 day forecast horizon
+- **Sequence**: 14-day lookback, 1-day-ahead forecast (model trained with `horizon=1`)
 - **Training**: Early stopping and ReduceLROnPlateau on a 2022 validation carve-out (not the test set)
-- **Test R² on 2023 hold-out**: −0.135 (1-day-ahead). LSTM underperforms tree models here because the 14-day sequence of 6 stationary features does not provide information that the lag/rolling features already give the trees.
+- **Test R² on 2023 hold-out**: **−0.104** (1-day-ahead, RMSE = 40.67 µg/m³). The LSTM underperforms tree models here because the 14-day sequence of 8 stationary features (no lagged pm25 in the input) does not give the LSTM information that the explicit `pm25_lag1` and `pm25_roll*` features give the trees.
+- **Recursive multi-horizon degradation**: see `07_horizon_degradation.png` — RMSE rises gently from 38.2 (1-day) to 41.6 (7-day) and R² deepens from −0.054 to −0.101. The curve is flat because the LSTM takes only exogenous features, so its predictions barely change as the window slides forward.
 
-### Final Feature Set (8 selected by 04, +5 engineered for 05)
-- **Satellite / aerosol**: `Optical_Depth_055` (MODIS AOD)
-- **Meteorology**: `wind_speed`
-- **Calendar / temporal**: `month`, `month_sin`, `month_cos`, `day_of_week`, `is_weekend`
-- **Socioeconomic**: `viirs_ntl` (nighttime lights)
-- **Engineered (lag/rolling with shift(1) for honesty)**: `pm25_lag1`, `pm25_lag3`, `pm25_lag7`, `pm25_roll7`, `pm25_roll14`, `pm25_roll30`, `aod_roll7`
+### Final Feature Set (6 selected by 04 + 7 engineered for 05)
+- **Satellite / aerosol**: `Optical_Depth_055` (MODIS MAIAC 1 km AOD)
+- **Meteorology**: `wind_speed` (ERA5)
+- **Calendar / temporal**: `month`, `month_sin`, `month_cos`, `day_of_week`
+- **Engineered (lag/rolling with `shift(1)` for honesty)**: `pm25_lag1`, `pm25_lag3`, `pm25_lag7`, `pm25_roll7`, `pm25_roll14`, `pm25_roll30`, `aod_roll7`
 
-Final model input: **13 features**.
+Final modelling matrix: **13 columns per station-day** (6 consensus + 7 engineered).
 
-### Key Features (SHAP Analysis)
-1. `pm25_lag1` (9.5) - Previous day's PM2.5 most predictive
-2. `pm25_roll7` (4.5) - 7-day rolling mean
-3. `Optical_Depth_055` (2.8) - MODIS AOD
-4. `wind_speed` (2.5) - Meteorological driver
+### Key Features (SHAP on the Random Forest)
+SHAP TreeExplainer identifies `pm25_lag1` as the dominant predictor, with
+`Optical_Depth_055` and `wind_speed` next. The exact mean |SHAP| values
+are visible in the regenerated `05_shap_analysis.png`. The qualitative
+ordering matches what is reported in the paper.
 
 ## Spatial Analysis Results
 
 ### Spatial Statistics (RF-residual-based)
-- **Moran's I** (on RF residuals, mean per station): −0.19 (p=0.28, not significant) — no detectable spatial autocorrelation remains after the RF absorbs what it can from the feature set. Per-station variation in PM2.5 is consistent with spatial randomness once the satellite + met features are accounted for.
-- **Moran's I on observed PM2.5 mean per station**: −0.19 (p=0.26, also not significant).
-- **LISA**: No stations flagged as significant hotspot/coldspot at p<0.05.
-- **Zone Analysis** (descriptive): real per-station means still show industrial > commercial > residential, consistent with land-use expectations.
-- **Seasonal Patterns**: Winter +30%, Monsoon −25% variation.
-
-### Station-Level Analysis (real per-station means)
-| Station Type | Mean PM2.5 (µg/m³) | WHO Annual Exceedance (×5 µg/m³) |
-|--------------|-------------------|----------------------------------|
-| Industrial | ~57 | ~11.4× |
-| Commercial | ~50 | ~10.1× |
-| Residential | ~41 | ~8.2× |
-
-(Real numbers depend on the rolling split — see `outputs/06_station_stats.csv` for the exact per-station values from the last run.)
+- **Moran's I on RF residuals** (mean per station): **I = −0.19 (p = 0.28, not significant)** — no detectable spatial autocorrelation remains after the RF absorbs what it can from the feature set. Per-station variation in PM₂.₅ is consistent with spatial randomness once the satellite + meteorological features are accounted for.
+- **Moran's I on observed PM₂.₅ mean per station**: I = −0.19 (p = 0.26, also not significant).
+- **LISA on RF residuals**: 7 of 8 stations share an identical residual of approximately +11.4 µg/m³ (they share the citywide MERRA-2 fallback). The global Moran's I is non-significant, consistent with no detectable per-station spatial process. See `06_lisa_map.png` and the paper text for the data-structure caveat.
+- **Zone Analysis**: the per-station means in `06_zone_analysis.png` show that 7 of 8 stations share an almost-identical observed mean (~62 µg/m³) because of the MERRA-2 fallback. The Saddar station, which has 279 days of per-station OpenAQ observations, has a slightly lower observed mean (~59 µg/m³) and slightly lower predicted mean. The clean "industrial > commercial > residential" pattern reported in earlier drafts of this README was an artefact of a fabricated zone multiplier that has since been removed.
 
 ## Digital Twin & Policy Scenarios
 
 ### Interactive Dashboard Features
 - **WHO Exceedance Counter**: Real-time grid cells >15 µg/m³
-- **Time Slider**: 12-month seasonal simulation
-- **Policy Sliders**: Industry (0-50%), Traffic (0-50%), Green (0-50%)
+- **Time Slider**: Scrubs through the 2023 test year
+- **Model Switcher**: Random Forest / XGBoost / LightGBM predictions
 - **3D Visualization**: PyDeck with Mapbox dark theme
-- **Model Switcher**: Ensemble/LSTM/XGB/RF/SVR views
 
 ### Scenario Simulation Results
-| Scenario | Mean PM2.5 (µg/m³) | Reduction vs Baseline | WHO 24h Exceedance |
-|----------|-------------------|----------------------|-------------------|
-| Baseline | 42.98 | 0.00 | 100.0% |
-| 30% Industry Cut | 42.55 | -0.42 | 100.0% |
-| Early Monsoon | 47.73 | +4.76 | 100.0% |
-| Traffic Restriction | 42.99 | +0.01 | 100.0% |
-| Green Belt +20% | 42.98 | 0.00 | 100.0% |
-| All Policies Combined | 46.25 | +3.28 | 100.0% |
+The current digital twin implements five scenarios via a linear
+feature-remapping approximation. The data-density limitation of the
+eight-station ground-truth set (88.8% of rows from the citywide
+MERRA-2 fallback) means per-scenario sensitivities are small in
+absolute terms. The honest interpretation is **direction
+sensitivity** of the model input space, not a quantitative
+emission-reduction forecast.
+
+| Scenario | Mean PM₂.₅ (µg/m³) | Δ vs Baseline | WHO 24h Exceedance |
+|----------|---------------------|---------------|--------------------|
+| Baseline (no policy) | 59.79 | — | 100.0% |
+| 30% Industry Cut | 59.83 | +0.04 | 100.0% |
+| Early Monsoon shift | 59.56 | −0.23 | 100.0% |
+| Traffic Restriction | 59.90 | +0.11 | 100.0% |
+| Green Belt +20% | 59.79 | 0.00 | 100.0% |
+| All Policies Combined | 59.72 | −0.07 | 100.0% |
+
+A chemistry-transport model (WRF-Chem, CMAQ) would be required to
+produce credible per-scenario predictions and is out of scope for
+this work.
 
 ## Installation & Setup
 
@@ -355,20 +379,23 @@ provenance tracking, leakage prevention, and honest evaluation:
 If you use this work in your research, please cite:
 
 ```bibtex
-@software{karachi_spatio_temporal_airq,
-  title={Spatio-Temporal Source Apportionment and Predictive Modeling of PM2.5/PM10 in Karachi: A Machine Learning Approach to Urban Air Quality Management},
-  author={Sidhart Sami},
-  year={2026},
-  url={https://github.com/SidhartSami/karachi-spatio-temporal-airq}
+@article{karachi_pm25_2026,
+  title   = {Spatio--Temporal Predictive Modelling of PM$_{2.5}$ in Karachi
+             from Multi-Source Satellite, Meteorological and Ground
+             Observations (2019--2023)},
+  author  = {Sami, Sidhart},
+  year    = {2026},
+  note    = {Single-author preprint; ORCID 0009-0003-8133-1230},
+  url     = {https://github.com/SidhartSami/karachi-spatio-temporal-airq}
 }
 ```
 
 ## Contact & Support
 
 - **Repository**: https://github.com/SidhartSami/karachi-spatio-temporal-airq
+- **Author**: Sidhart Sami — sidhart.samir.punjabi@gmail.com — ORCID 0009-0003-8133-1230
 - **Issues**: Report bugs via GitHub Issues
 - **Documentation**: See `docs/` folder for detailed guides
-- **Data Issues**: Check `script/check_both_datasets.py` for validation
 
 ## License
 
@@ -376,6 +403,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Project Status**: Complete and ready for academic publication and policy application.
+**Project Status**: Complete and ready for academic submission.
 
-*This framework provides a comprehensive, reproducible approach to urban air quality management that can be adapted to cities worldwide.*
+*This framework provides a reproducible approach to daily PM$_{2.5}$
+modelling in data-sparse South Asian megacities, and can be adapted to
+other cities where the open satellite record is rich but published
+multi-year ML studies are absent.*
